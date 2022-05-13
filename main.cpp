@@ -24,16 +24,52 @@ std::string getRandomWord() {
     return listOfWords.at(wordNum);
 }
 
-char getLetterGuess() {
+char getLetterGuess(std::vector<char> lettersGuessed) {
     char letter;
-    std::cout << "Choose a letter: ";
-    std::cin >> letter;
-    std::cout << std::endl;
+    bool temp = false;
+    do {
+        std::cout << "Choose a letter: ";
+        std::cin >> letter;
+        std::cout << std::endl;
+
+        if (std::find(lettersGuessed.begin(), lettersGuessed.end(), letter) != lettersGuessed.end()) {
+            /* v contains x */
+            std::cout << "You have already guessed that letter, guess again." << std::endl;
+            temp = true;
+        } else {
+            temp = false;
+        }
+    } while (temp);
+
     return letter;
 }
 
-void printHangedMan() {
-    std::cout << "HANGEDMAN" << std::endl << std::endl;
+void printHangedMan(int wrongCount) {
+    std::cout << " -------"  << std::endl;
+    std::cout << " |      "  << std::endl;
+
+    if (wrongCount >= 1) {
+        std::cout << " O      "  << std::endl;
+    }
+    if (wrongCount >= 2) {
+        std::cout << "\\ ";
+        if (wrongCount >= 3) {
+            std::cout << "/"  << std::endl;
+        } else {
+            std::cout << std::endl;
+        }
+    }
+    if (wrongCount >= 4) {
+        std::cout << " |"  << std::endl;
+    }
+    if (wrongCount >= 5) {
+        std::cout << "/ ";
+        if (wrongCount >= 6) {
+            std::cout << "\\"  << std::endl;
+        } else {
+            std::cout << std::endl;
+        }
+    }
 }
 
 void printWordState(std::string newWord) {
@@ -48,7 +84,7 @@ void printGuessedLetters(std::vector<char> lettersGuessed) {
     for (unsigned int i = 0; i < lettersGuessed.size(); i++) {
         std::cout << lettersGuessed.at(i) << " ";
     }
-    std::cout << std::endl << std::endl;
+    std::cout << std::endl;
 }
 
 
@@ -60,7 +96,7 @@ int main() {
     std::string currentWord = getRandomWord();
     unsigned int wrongCount = 0;
 
-    // Create newWord
+    // Create blankWord to guess on
     std::string blankWord;
     for (unsigned int i = 0; i < currentWord.size(); i++) {
         blankWord.push_back('-');
@@ -69,31 +105,37 @@ int main() {
     std::vector<char> lettersGuessed;
     bool wordGuessed = false;
     while (!wordGuessed) {
-        printHangedMan();
+        printHangedMan(wrongCount);
         printGuessedLetters(lettersGuessed);
         printWordState(blankWord);
 
         // Ask player to guess
-        char letterGuess = getLetterGuess();
+        char letterGuess = getLetterGuess(lettersGuessed);
         lettersGuessed.push_back(letterGuess);
 
-        // if letter is in word
-        for (unsigned int i = 0; i < currentWord.size(); i++) {
-            if (currentWord.at(i) == letterGuess) {
-                // Change - to letterGuess in newWord
-                blankWord.at(i) = letterGuess;
+        if (currentWord.find(letterGuess) != std::string::npos) { // if letter is in word
+            for (unsigned int i = 0; i < currentWord.size(); i++) {
+                if (currentWord.at(i) == letterGuess) {
+                    // Change - to letterGuess in newWord
+                    blankWord.at(i) = letterGuess;
+                }
             }
+        } else { // letter is not in word
+            wrongCount++;
         }
 
         // Check if word has been guessed
         if (blankWord.find('-') == std::string::npos) {
             std::cout << "YOU WIN!" << std::endl;
+            std::cout << "The word was " << currentWord << std::endl;
             wordGuessed = true;
         }
 
         // Check if out of guesses
         if (wrongCount >= 6) {
+            printHangedMan(wrongCount);
             std::cout << "Sorry, you loose..." << std::endl;
+            std::cout << "The word was " << currentWord << std::endl;
             break;
         }
     }
